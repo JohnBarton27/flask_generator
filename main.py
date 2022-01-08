@@ -74,6 +74,9 @@ def create_readme(description):
         \t1.This only needs to be run the first time you are starting the application.
         1. Run `cd {repo_slug}; python main.py` from the root directory of this repository.
         \t1. {project_name} will now be accessible in your browser of choice at `localhost:{port}`.
+        
+        ### Unit Tests
+        1. Run `python tests/run_tests.py` from the root directory of the repository.
     """
 
     return write_to_file('README.md', readme_content)
@@ -158,10 +161,45 @@ def create_static_structure():
     write_to_file(os.path.join(static_dir, 'index.html'), index_content)
 
 
+def setup_unit_tests():
+    global project_dir
+    global repo_slug
+
+    # Make 'tests' directory
+    tests_dir = os.path.join(project_dir, 'tests')
+    os.mkdir(tests_dir)
+    Path(os.path.join(tests_dir, '__init__.py')).touch()
+
+    # run_tests.py file
+    run_tests_content = f"""\
+        import pathlib
+        import sys
+        import unittest
+        import xmlrunner
+        
+        # Set PYTHONPATH
+        sys.path.insert(0, str(pathlib.Path(__file__).parent.absolute().parent.absolute().joinpath('tests')))
+        sys.path.insert(0, str(pathlib.Path(__file__).parent.absolute().parent.absolute().joinpath('{repo_slug}')))
+        
+        test_dir = pathlib.Path(__file__).parent.absolute()
+        loader = unittest.TestLoader()
+        suite = loader.discover(test_dir)
+        
+        runner = xmlrunner.XMLTestRunner("test-reports")
+        results = runner.run(suite)
+        if results.errors or results.failures:
+            raise Exception('Found unit test failures!')
+    """
+
+    write_to_file(os.path.join(tests_dir, 'run_tests.py'), run_tests_content)
+
+
 # Base information
 project_name = input('Project name: ')
 repo_slug = project_name.lower().replace(' ', '-')
 project_dir = get_project_dir()
+Path(os.path.join(project_dir, '__init__.py')).touch()
+
 create_requirements()
 create_gitignore()
 
@@ -175,5 +213,8 @@ source_root = os.path.join(project_dir, repo_slug)
 os.mkdir(source_root)
 create_main()
 create_static_structure()
+
+# Unit Tests
+setup_unit_tests()
 
 print(f'Creating project \'{project_name}\'...')
