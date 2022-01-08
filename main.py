@@ -78,6 +78,53 @@ def create_readme(description):
     return write_to_file('README.md', readme_content)
 
 
+def create_main():
+    global project_name
+    global port
+    global repo_slug
+
+    main_content = f"""\
+        import logging
+        import os
+        import sqlite3 as sl
+        from urllib.request import pathname2url
+
+        from flask import Flask, render_template, request
+
+        app = Flask(__name__, template_folder=os.path.abspath('static'))
+        
+        @app.route('/')
+        def index():
+            return '<h1>Hello, World!</h1>'
+            
+        def connect_to_database():
+            db_name = '{repo_slug}.db'
+            try:
+                dburi = 'file:{{}}?mode=rw'.format(pathname2url(db_name))
+                conn = sl.connect(dburi, uri=True)
+                logging.info('Found existing database.')
+            except sl.OperationalError:
+                # handle missing database case
+                logging.warning('Could not find database - will initialize an empty one!')
+                conn = sl.connect(db_name)
+
+            
+        if __name__ == '__main__':
+            # Setup Logging
+            logging.basicConfig(format='%(levelname)s [%(asctime)s]: %(message)s', level=logging.INFO)
+            logging.info('Starting {project_name}...')
+        
+            # Connect to database
+            logging.info('About to connect to database...')
+            connect_to_database()
+            logging.info('Successfully connected to database.')
+        
+            app.run(port={port}, debug=False, use_reloader=False)
+    """
+
+    write_to_file(os.path.join(repo_slug, 'main.py'), main_content)
+
+
 # Base information
 project_name = input('Project name: ')
 repo_slug = project_name.lower().replace(' ', '-')
@@ -89,5 +136,10 @@ port = random.randrange(1024, 9999)
 
 description = input("Project description: ")
 create_readme(description)
+
+# Make 'main' source directory
+source_root = os.path.join(project_dir, repo_slug)
+os.mkdir(source_root)
+create_main()
 
 print(f'Creating project \'{project_name}\'...')
