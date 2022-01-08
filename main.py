@@ -1,4 +1,5 @@
 import os
+import random
 import textwrap
 
 
@@ -53,11 +54,40 @@ def create_gitignore():
     write_to_file('.gitignore', gitignore_content)
 
 
+def create_readme(description):
+    global project_name
+    global repo_slug
+    global port
+
+    readme_content = f"""\
+        # {project_name}
+        {description}
+    
+        ## Setup
+        ### Requirements
+        * Python 3
+        
+        ### Running
+        1. Clone this repository
+        1. Run `pip install -r requirements.txt` from the root directory of the repository.
+        \t1.This only needs to be run the first time you are starting the application.
+        1. Run `python {repo_slug}/main.py` from the root directory of this repository.
+        \t1. {project_name} will now be accessible in your browser of choice at `localhost:{port}`.
+    """
+
+    return write_to_file('README.md', readme_content)
+
+
 # Base information
 project_name = input('Project name: ')
 repo_slug = project_name.lower().replace(' ', '-')
 project_dir = get_project_dir()
 create_requirements()
 create_gitignore()
+
+port = random.randrange(1024, 9999)
+
+description = input("Project description: ")
+create_readme(description)
 
 print(f'Creating project \'{project_name}\'...')
