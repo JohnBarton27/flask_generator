@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import random
 import textwrap
 
@@ -71,7 +72,7 @@ def create_readme(description):
         1. Clone this repository
         1. Run `pip install -r requirements.txt` from the root directory of the repository.
         \t1.This only needs to be run the first time you are starting the application.
-        1. Run `python {repo_slug}/main.py` from the root directory of this repository.
+        1. Run `cd {repo_slug}; python main.py` from the root directory of this repository.
         \t1. {project_name} will now be accessible in your browser of choice at `localhost:{port}`.
     """
 
@@ -95,7 +96,7 @@ def create_main():
         
         @app.route('/')
         def index():
-            return '<h1>Hello, World!</h1>'
+            return render_template('index.html')
             
         def connect_to_database():
             db_name = '{repo_slug}.db'
@@ -125,6 +126,38 @@ def create_main():
     write_to_file(os.path.join(repo_slug, 'main.py'), main_content)
 
 
+def create_static_structure():
+    global project_name
+    global source_root
+
+    static_dir = os.path.join(source_root, 'static')
+    os.mkdir(static_dir)
+
+    # CSS
+    css_dir = os.path.join(static_dir, 'css')
+    os.mkdir(css_dir)
+    Path(os.path.join(css_dir, '.gitkeep')).touch()
+
+    # JavaScript
+    js_dir = os.path.join(static_dir, 'js')
+    os.mkdir(js_dir)
+    Path(os.path.join(js_dir, '.gitkeep')).touch()
+
+    # index.html
+    index_content = f"""\
+        <html>
+        <head>
+        \t<title>{project_name}</title>
+        </head>
+        <body>
+        \t<h1>{project_name}</h1>
+        </body>
+        </html>
+    """
+
+    write_to_file(os.path.join(static_dir, 'index.html'), index_content)
+
+
 # Base information
 project_name = input('Project name: ')
 repo_slug = project_name.lower().replace(' ', '-')
@@ -141,5 +174,6 @@ create_readme(description)
 source_root = os.path.join(project_dir, repo_slug)
 os.mkdir(source_root)
 create_main()
+create_static_structure()
 
 print(f'Creating project \'{project_name}\'...')
