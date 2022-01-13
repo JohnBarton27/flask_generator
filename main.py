@@ -1,5 +1,7 @@
 import os
 from pathlib import Path
+import shlex
+import subprocess
 import random
 import textwrap
 
@@ -24,6 +26,10 @@ def write_to_file(filepath, content):
 
     with open(full_path, 'w') as file_to_write:
         file_to_write.write(textwrap.dedent(content))
+
+
+def run_cmd(command):
+    subprocess.call(shlex.split(command), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
 def create_requirements():
@@ -194,8 +200,23 @@ def setup_unit_tests():
     write_to_file(os.path.join(tests_dir, 'run_tests.py'), run_tests_content)
 
 
+def setup_git():
+    global project_dir
+
+    os.chdir(project_dir)
+
+    run_cmd('git init')
+    run_cmd('git add -A')
+    run_cmd('git commit -m "Initial Commit"')
+
+    # Setup github Repo
+    # curl -H "Authorization: token ACCESS_TOKEN" --data '{"name":"NEW_REPO_NAME"}' https://api.github.com/orgs/ORGANIZATION_NAME/repos
+
+
 # Base information
 project_name = input('Project name: ')
+print(f'Creating project \'{project_name}\'...')
+
 repo_slug = project_name.lower().replace(' ', '-')
 project_dir = get_project_dir()
 Path(os.path.join(project_dir, '__init__.py')).touch()
@@ -217,4 +238,5 @@ create_static_structure()
 # Unit Tests
 setup_unit_tests()
 
-print(f'Creating project \'{project_name}\'...')
+# Git setup
+setup_git()
