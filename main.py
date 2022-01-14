@@ -37,7 +37,6 @@ def create_requirements():
         flask
         xmlrunner
         coverage
-        pynput
     """
 
     write_to_file('requirements.txt', req_content)
