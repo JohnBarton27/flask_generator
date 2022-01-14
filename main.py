@@ -102,10 +102,12 @@ def create_main():
 
         app = Flask(__name__, template_folder=os.path.abspath('static'))
         
+
         @app.route('/')
         def index():
             return render_template('index.html')
             
+        
         def connect_to_database():
             db_name = '{repo_slug}.db'
             try:
